@@ -1,0 +1,15 @@
+# Dépendances et build locaux : réinstallés / reconstruits dans l'image
+node_modules
+.next
+
+# Secrets et fichiers inutiles au build
+.env
+.env.*
+.git
+.gitignore
+*.md
+compose.yaml
+Dockerfile
+.dockerignore
+db
+npm-debug.log*

@@ -1,0 +1,33 @@
+services:
+  web:
+    build: .
+    image: liste-courses-web
+    environment:
+      # "db" = nom du service ci-dessous, résolu par le DNS interne de Compose
+      DATABASE_URL: postgres://${POSTGRES_USER:-courses}:${POSTGRES_PASSWORD:-courses}@db:5432/${POSTGRES_DB:-courses}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-courses}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-courses}
+      POSTGRES_DB: ${POSTGRES_DB:-courses}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    # Pas de "ports" : la base n'est joignable que par le service web
+
+volumes:
+  db-data:
